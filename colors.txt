@@ -1,0 +1,8 @@
+// src/theme/colors.ts
+export const Colors = {
+  background: '#F5F5F5',
+  foreground: '#0A0A0A',
+  primary: '#F5A623',
+  accent: '#9AE6B4',
+  muted: '#E0E0E0',
+};
