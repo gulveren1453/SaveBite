@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { PieChart, StackedBarChart } from "react-native-chart-kit";
-import { ArrowRight, Soup, Warehouse, Plus } from "lucide-react-native";
+import { ArrowRight, Soup, Warehouse, Plus, BookOpen } from "lucide-react-native";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { firestore as db, auth } from "../../../firebase/firebase-config";
 import dayjs from "dayjs";
@@ -124,10 +124,14 @@ export default function DashboardPage() {
       {/* Upcoming Expirations */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Upcoming Expirations</Text>
-        <Text style={styles.cardDesc}>Items in your pantry that are expiring soon.</Text>
+        <Text style={styles.cardDesc}>
+          Items in your pantry that are expiring soon.
+        </Text>
 
         <FlatList
-          data={products.sort((a, b) => daysLeft(a.expiryDate) - daysLeft(b.expiryDate))}
+          data={products.sort(
+            (a, b) => daysLeft(a.expiryDate) - daysLeft(b.expiryDate)
+          )}
           keyExtractor={(i) => i.id}
           renderItem={renderExpiry}
           contentContainerStyle={{ paddingVertical: 8 }}
@@ -138,10 +142,14 @@ export default function DashboardPage() {
       {/* Waste Stats */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Waste Stats This Month</Text>
-        <Text style={styles.cardDesc}>Your food saving progress based on expiry dates.</Text>
+        <Text style={styles.cardDesc}>
+          Your food saving progress based on expiry dates.
+        </Text>
 
         {products.length === 0 ? (
-          <Text style={{ color: "#6B7280", textAlign: "center", marginVertical: 20 }}>
+          <Text
+            style={{ color: "#6B7280", textAlign: "center", marginVertical: 20 }}
+          >
             No data yet — add some items to see stats.
           </Text>
         ) : (
@@ -167,10 +175,14 @@ export default function DashboardPage() {
       {/* Monthly Waste Trend */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Monthly Waste Trend</Text>
-        <Text style={styles.cardDesc}>Saved vs. wasted items over past months.</Text>
+        <Text style={styles.cardDesc}>
+          Saved vs. wasted items over past months.
+        </Text>
 
         {products.length === 0 ? (
-          <Text style={{ color: "#6B7280", textAlign: "center", marginVertical: 20 }}>
+          <Text
+            style={{ color: "#6B7280", textAlign: "center", marginVertical: 20 }}
+          >
             No data yet — add some items to see monthly trend.
           </Text>
         ) : (
@@ -199,7 +211,9 @@ export default function DashboardPage() {
             <Warehouse size={24} color="#7F5AF0" />
           </View>
           <Text style={styles.actionTitle}>Manage Inventory</Text>
-          <Text style={styles.actionDesc}>View, add, or edit pantry items.</Text>
+          <Text style={styles.actionDesc}>
+            View, add, or edit pantry items.
+          </Text>
           <View style={styles.actionFooter}>
             <Text style={styles.actionLink}>Go to Inventory</Text>
             <ArrowRight size={16} color="#7F5AF0" />
@@ -215,7 +229,9 @@ export default function DashboardPage() {
             <Soup size={24} color="#7F5AF0" />
           </View>
           <Text style={styles.actionTitle}>Find Recipes</Text>
-          <Text style={styles.actionDesc}>Discover recipes for your ingredients.</Text>
+          <Text style={styles.actionDesc}>
+            Discover recipes for your ingredients.
+          </Text>
           <View style={styles.actionFooter}>
             <Text style={styles.actionLink}>Suggest Recipes</Text>
             <ArrowRight size={16} color="#7F5AF0" />
@@ -231,9 +247,29 @@ export default function DashboardPage() {
             <Plus size={24} color="#7F5AF0" />
           </View>
           <Text style={styles.actionTitle}>Shopping List</Text>
-          <Text style={styles.actionDesc}>See recommended items to buy next.</Text>
+          <Text style={styles.actionDesc}>
+            See recommended items to buy next.
+          </Text>
           <View style={styles.actionFooter}>
             <Text style={styles.actionLink}>Go to List</Text>
+            <ArrowRight size={16} color="#7F5AF0" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Food Storage Tips */}
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => router.push("/(main)/storage-tips/page")}
+        >
+          <View style={styles.iconCircle}>
+            <BookOpen size={24} color="#7F5AF0" />
+          </View>
+          <Text style={styles.actionTitle}>Food Storage Tips</Text>
+          <Text style={styles.actionDesc}>
+            Learn how to store food properly by category.
+          </Text>
+          <View style={styles.actionFooter}>
+            <Text style={styles.actionLink}>Learn More</Text>
             <ArrowRight size={16} color="#7F5AF0" />
           </View>
         </TouchableOpacity>
@@ -258,8 +294,17 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
-  cardTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 4 },
-  cardDesc: { fontSize: 14, color: "#6B7280", marginBottom: 12 },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  cardDesc: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 12,
+  },
   expiryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -288,8 +333,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  actionTitle: { marginTop: 12, fontSize: 16, fontWeight: "600", color: "#111827" },
+  actionTitle: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
   actionDesc: { marginTop: 4, fontSize: 14, color: "#6B7280" },
-  actionFooter: { marginTop: 12, flexDirection: "row", alignItems: "center" },
-  actionLink: { color: "#7F5AF0", fontWeight: "500", marginRight: 4 },
+  actionFooter: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  actionLink: {
+    color: "#7F5AF0",
+    fontWeight: "500",
+    marginRight: 4,
+  },
 });

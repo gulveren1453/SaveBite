@@ -2,24 +2,41 @@
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import RecipeCard from "@/components/custComponent/RecipeCard";
-import { collection, onSnapshot } from "firebase/firestore";
-import { firestore as db } from "../../../firebase/firebase-config";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { firestore as db, auth } from "../../../firebase/firebase-config";
 
 export default function RecipesPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [recipes, setRecipes] = useState<any[]>([]);
 
-  // 1️⃣ Firestore ürünlerini çek
+  // 1️⃣ SADECE GİRİŞ YAPAN KULLANICININ ÜRÜNLERİ
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const q = query(
+      collection(db, "products"),
+      where("userId", "==", user.uid)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setProducts(data);
     });
+
     return () => unsub();
   }, []);
 
-  // 2️⃣ Tarifleri çek
+  // 2️⃣ TARİFLERİ ÇEK + MATCH SCORE HESAPLA
   useEffect(() => {
+    if (products.length === 0) {
+      setRecipes([]);
+      return;
+    }
+
     fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=")
       .then((res) => res.json())
       .then((data) => {
@@ -27,12 +44,15 @@ export default function RecipesPage() {
 
         const recipesProcessed = data.meals.map((r: any) => {
           const ingredients: string[] = [];
+
           for (let i = 1; i <= 20; i++) {
             const ing = r[`strIngredient${i}`];
-            if (ing && ing.trim() !== "") ingredients.push(ing.trim());
+            if (ing && ing.trim() !== "") {
+              ingredients.push(ing.trim());
+            }
           }
 
-          // 3️⃣ MATCH SCORE HESAPLAMA
+          // 🔥 MATCH SCORE (USER INVENTORY BASED)
           const total = ingredients.length;
           const matched = ingredients.filter((ing) =>
             products.some(
@@ -48,14 +68,17 @@ export default function RecipesPage() {
             imageUrl: r.strMealThumb,
             instructions: r.strInstructions,
             ingredients,
-            matchScore, // 🔥 recipe içine ekledik!
+            matchScore,
           };
         });
+
+        // ⭐ En uygun tarifler üstte
+        recipesProcessed.sort((a: any, b: any) => b.matchScore - a.matchScore);
 
         setRecipes(recipesProcessed);
       })
       .catch((err) => console.error(err));
-  }, [products]); // Ürünler değiştikçe tekrar hesaplanır
+  }, [products]);
 
   return (
     <View style={styles.container}>
@@ -75,6 +98,14 @@ export default function RecipesPage() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: "#fff" },
-  title: { fontSize: 28, fontWeight: "bold", color: "#111827" },
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: "#FFFFFF",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#111827",
+  },
 });
