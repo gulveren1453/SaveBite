@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { CheckCircle, PieChart, Soup, Warehouse } from 'lucide-react-native';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function Home() {
   const features = [
@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Logo & Hero */}
+      {/* Hero Section */}
       <View style={styles.heroSection}>
         <Text style={styles.heroTitle}>Waste Less, Live More.</Text>
         <Text style={styles.heroSubtitle}>
@@ -46,14 +46,10 @@ export default function Home() {
           <Text style={styles.featureDescription}>
             From a chaotic pantry to a clear overview. Know what you have, what's expiring, and what to cook next.
           </Text>
-          <Link href="/(main)/dashboard/page">
+          <Link href="/(auth)/login/page">
             <Text style={styles.button}>Go to Dashboard</Text>
           </Link>
         </View>
-        <Image
-          source={{ uri: 'https://placehold.co/1000x800.png' }}
-          style={styles.featureImage}
-        />
       </View>
 
       {/* Features List */}
@@ -73,7 +69,6 @@ export default function Home() {
           ))}
         </View>
       </View>
-
     </ScrollView>
   );
 }
@@ -129,12 +124,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     color: '#6E6E73',
-  },
-  featureImage: {
-    width: '100%',
-    height: 200,
-    marginTop: 16,
-    borderRadius: 12,
   },
   featuresSection: {
     alignItems: 'center',
