@@ -51,7 +51,7 @@ export default function InventoryPage() {
 
       await addDoc(collection(db, "products"), {
         ...item,
-        initialQuantity: item.quantity, // 🔥 referans miktar
+        initialQuantity: item.quantity,
         userId: user.uid,
         createdAt: serverTimestamp(),
       });
@@ -110,6 +110,7 @@ export default function InventoryPage() {
         <Text>Quantity: {item.quantity || 0}</Text>
         <Text style={styles.itemDate}>Created: {createdAt}</Text>
         <Text style={styles.itemDate}>Avg cons.: {item.avgConsumptionDays?.toFixed(1) ?? "-"}</Text>
+        <Text style={styles.itemDate}>Expiry: {item.expiryDate ? format(item.expiryDate.toDate ? item.expiryDate.toDate() : item.expiryDate, "dd/MM/yyyy") : "N/A"}</Text>
 
         <View style={styles.actionRow}>
           <TouchableOpacity
@@ -181,14 +182,12 @@ export default function InventoryPage() {
         <Text style={styles.addButtonText}>+ Add Item</Text>
       </TouchableOpacity>
 
-      {/* Add Item Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <AddItemModal onAdd={handleAddItem} onCancel={() => setShowAddModal(false)} />
         </View>
       </Modal>
 
-      {/* Edit Quantity Modal */}
       <Modal visible={showEditModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           {editingProduct && (

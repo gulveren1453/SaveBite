@@ -26,9 +26,12 @@ type ShoppingListItem = {
   quantity: number;
   initialQuantity: number;
   createdAt: Date;
-  daysLeft?: number;
+  expiryDate?: Date;
+  expiryDaysLeft?: number;
   avgConsumptionDays?: number;
+  daysLeft?: number;
   checked?: boolean;
+  isExpired?: boolean;
 };
 
 export default function ShoppingListPage() {
@@ -55,8 +58,11 @@ export default function ShoppingListPage() {
 
       const products: ShoppingListItem[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
-        const createdAt = data.createdAt?.toDate?.() || new Date();
 
+        const createdAt = data.createdAt?.toDate?.() || new Date();
+        const expiryDate = data.expiryDate?.toDate?.();
+
+        // 🔹 TÜKETİM HESABI
         const consumed =
           (data.initialQuantity ?? 0) - (data.quantity ?? 0);
 
@@ -75,14 +81,28 @@ export default function ShoppingListPage() {
           ? avgConsumption * data.quantity
           : undefined;
 
+        // 🔹 TARİH HESABI
+        const expiryDaysLeft = expiryDate
+          ? Math.ceil(
+              (expiryDate.getTime() - today.getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          : undefined;
+
+        const isExpired =
+          expiryDaysLeft !== undefined && expiryDaysLeft < 0;
+
         return {
           id: docSnap.id,
           name: data.name,
           quantity: data.quantity,
           initialQuantity: data.initialQuantity,
           createdAt,
+          expiryDate,
+          expiryDaysLeft,
           avgConsumptionDays: avgConsumption,
           daysLeft,
+          isExpired,
           checked: false,
         };
       });
@@ -91,8 +111,8 @@ export default function ShoppingListPage() {
       const sorted = products.sort((a, b) => {
         if (a.quantity === 0 && b.quantity !== 0) return -1;
         if (a.quantity !== 0 && b.quantity === 0) return 1;
-        if (a.daysLeft !== undefined && b.daysLeft !== undefined) {
-          return a.daysLeft - b.daysLeft;
+        if (a.expiryDaysLeft !== undefined && b.expiryDaysLeft !== undefined) {
+          return a.expiryDaysLeft - b.expiryDaysLeft;
         }
         return 0;
       });
@@ -104,11 +124,15 @@ export default function ShoppingListPage() {
     return () => unsub();
   }, []);
 
+  // 🔹 SHOPPING LIST FİLTRESİ
   const displayedItems =
     activeTab === "ALL"
       ? allItems
       : allItems.filter(
-          (p) => p.quantity === 0 || (p.daysLeft ?? 0) <= 7
+          (p) =>
+            p.quantity === 0 ||
+            p.isExpired ||
+            (p.expiryDaysLeft !== undefined && p.expiryDaysLeft <= 7)
         );
 
   const toggleCheck = (id: string) => {
@@ -159,6 +183,7 @@ export default function ShoppingListPage() {
           )
         : 1;
 
+    // 🔹 STATUS = SADECE STOK
     const status =
       item.quantity === 0
         ? "OUT"
@@ -186,8 +211,21 @@ export default function ShoppingListPage() {
           </Text>
 
           <Text style={styles.statsText}>
-            Qty: {item.quantity} | Buy: {recommendedQty} | Days left:{" "}
-            {item.daysLeft?.toFixed(1) ?? "-"}
+            Qty: {item.quantity} | Buy: {recommendedQty}
+          </Text>
+
+          {/* 🔹 TARİH BİLGİSİ (AYRI) */}
+          <Text
+            style={[
+              styles.expiryText,
+              item.isExpired && styles.expiredText,
+            ]}
+          >
+            {item.isExpired
+              ? "Expired"
+              : item.expiryDaysLeft !== undefined
+              ? `Expires in ${item.expiryDaysLeft} days`
+              : "No expiry date"}
           </Text>
         </View>
 
@@ -315,6 +353,16 @@ const styles = StyleSheet.create({
   itemText: { fontSize: 17, fontWeight: "600" },
   strikeText: { textDecorationLine: "line-through", color: "#9CA3AF" },
   statsText: { fontSize: 13, color: "#555" },
+
+  expiryText: {
+    fontSize: 12,
+    marginTop: 2,
+    color: "#374151",
+  },
+  expiredText: {
+    color: "#EF4444",
+    fontWeight: "bold",
+  },
 
   restockBtn: {
     backgroundColor: "#5D5FEF",
